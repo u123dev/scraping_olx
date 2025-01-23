@@ -3,7 +3,6 @@ from datetime import timedelta
 from celery import Celery
 from celery.schedules import crontab
 
-# Настройка Celery с Redis как брокером
 celery_app = Celery("tasks", broker="redis://redis:6379", backend="redis://redis:6379")
 
 # Route 'scraping' and 'web_server' tasks to queues
@@ -20,17 +19,15 @@ celery_app.conf.task_queues = {
 
 celery_app.conf.update(
     timezone="Europe/Kiev",
-    # set higher maximum interval for beat checks
     beat_max_loop_interval=691200,  # default 8 days in seconds
     broker_connection_retry_on_startup=True
 )
 
 
-# Пример планирования задач с Celery Beat
 celery_app.conf.beat_schedule = {
     "scraping": {
         "task": "olx.tasks.start_scraping",
-        "schedule": timedelta(seconds=60),  # интервал, через который будет выполняться задача
+        "schedule": timedelta(seconds=60),
     },
     "dumping": {
         "task": "olx.dump.dump_start",
