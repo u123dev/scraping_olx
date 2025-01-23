@@ -49,11 +49,11 @@ class OlxSpider(scrapy.Spider):
         price, currency = convert_to_num(raw_price)
 
         # API for getting phones
-        # !!! Uncomment & Use next code with Proxy only, cause ip ban will be used
+        # !!!  Use next code with Proxy only, cause ip ban will be used
         api_phone = f"https://www.olx.ua/api/v1/offers/{id_ads}/limited-phones/"
-        response_phone = None
-        # response_phone = requests.get(api_phone)
-        # time.sleep(0.5)
+        # response_phone = None
+        response_phone = requests.get(api_phone)
+        time.sleep(0.5)
 
         if response_phone and response_phone.status_code == 200 and response_phone.headers["Content-Type"].startswith("application/json"):
             data_phone = response_phone.json()
