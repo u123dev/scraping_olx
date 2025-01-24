@@ -1,0 +1,88 @@
+
+services:
+  scrapy:
+    build:
+      context: .
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+#    command: crawl olx
+    volumes:
+      - ./:/app
+    depends_on:
+      - scrapy_db
+
+  scrapy_db:
+    image: postgres:16-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    volumes:
+      - db_data:$PGDATA
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  celery_worker_scraping:
+    build: .
+    depends_on:
+      - scrapy_db
+      - redis
+      - scrapy
+    env_file:
+      - .env
+    volumes:
+      - ./:/app
+    command: celery -A celery_main.celery worker -Q scraping_queue --loglevel=INFO
+
+  celery_worker_dumping:
+    build: .
+    depends_on:
+      - scrapy_db
+      - redis
+      - scrapy
+    env_file:
+      - .env
+    volumes:
+      - ./:/app
+    command: celery -A celery_main.celery worker -Q dumping_queue --loglevel=INFO
+
+  celery_beat:
+    build: .
+    depends_on:
+      - scrapy_db
+      - redis
+      - scrapy
+    env_file:
+      - .env
+    volumes:
+      - ./:/app
+    command: celery -A celery_main.celery beat --loglevel=INFO
+
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5555:5555"
+    env_file:
+      - .env
+    environment:
+      - FLOWER_UNAUTHENTICATED_API=true # Flower API access
+    volumes:
+      - ./:/app
+    command: "celery -A celery_main.celery flower --address=0.0.0.0"
+    depends_on:
+      - scrapy_db
+      - redis
+      - celery_worker_scraping
+      - celery_worker_dumping
+      - celery_beat
+
+volumes:
+  db_data:
