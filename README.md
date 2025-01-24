@@ -56,10 +56,10 @@ docker-compose up --build
 ```
 
 Please note:
-   * Copy [sample.env](sample.env) file to **.env** & set environment variables 
+   * Copy [.env-sample](.env-sample) file to **.env** & set environment variables 
 
 
-### Tasks monitoring - Access Flower / Celery tasks monitoring
+#### Tasks monitoring - Access Flower / Celery tasks monitoring
    - [http://127.0.0.1:5555/tasks/](http://127.0.0.1:8000/5555/tasks/)
 
 ### Contact
